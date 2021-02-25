@@ -16,6 +16,12 @@ const Users = require('./models/users');
 require('./passport/google-passport');
 require('./passport/facebook-passport');
 
+//Link Helpers
+const {
+  ensureAuthentication,
+  ensureGuest
+}= require('./helpers/auth');
+
 //initialise application
 const app= express();
 //Express config
@@ -63,7 +69,7 @@ mongoose.connect(keys.MongoURI,{
 const port= process.env.PORT || 3000;
 
 // handle routes
-app.get('/',(req,res)=> {
+app.get('/', ensureGuest ,(req,res)=> {
     res.render('home');
 });
 
@@ -93,13 +99,26 @@ app.get('/auth/facebook/callback',
     res.redirect('/profile');
   });
 
-app.get('/profile',(req,res) =>{
+app.get('/profile', ensureAuthentication ,(req,res) =>{
     Users.findById({_id: req.user._id})
     .then((user) =>{
         res.render('profile', {
             user: user});
     });
     
+});
+
+//Handle Email POST route
+app.post('/addEmail',(req,res) =>{
+  const email=req.body.email;
+  Users.findById({_id: req.user._id})
+  .then((user) =>{
+      user.email=email;
+      user.save()
+      .then(()=>{
+        res.redirect('/profile');
+      });
+  });
 });
 
 //Handle user logout route
