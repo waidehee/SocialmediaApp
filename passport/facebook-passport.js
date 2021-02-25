@@ -14,7 +14,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.use(new FacebookStrategy({
-    clientID: keys.FcebookClientID,
+    clientID: keys.FacebookClientID,
     clientSecret: keys.FacebookClientSecret,
     callbackURL: "/auth/facebook/callback",
     profileFields: ['id', 'displayName', 'name', 'photos', 'emails'],
