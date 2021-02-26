@@ -25,7 +25,7 @@ const postSchema = new Schema({
         default: true
     },
     comments:[{
-        commmentBody:{
+        commentBody:{
             type: String
         },
         commentUser:{
