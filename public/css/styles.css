@@ -53,3 +53,10 @@ h1{
 #address{
     color: rgb(160, 10, 173);
 }
+#userbtn{
+    text-decoration: none;
+}
+.post-user-pic{
+    width: 100px;
+    height: auto;
+}

@@ -8,10 +8,12 @@ const passport= require('passport');
 const session = require("express-session");
 const bodyParser = require('body-parser');
 const cookieParser= require('cookie-parser');
+const methodOverride=require('method-override');
 
 //Connect to MongoUri
 const keys= require('./config/keys');
 const Users = require('./models/users');
+const Post= require('./models/post');
 
 require('./passport/google-passport');
 require('./passport/facebook-passport');
@@ -34,6 +36,7 @@ app.use(session({ secret: 'keyboard cat' ,
 resave: true,
 saveUninitialized:true
 }));
+app.use(methodOverride('_method'));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -100,19 +103,31 @@ app.get('/auth/facebook/callback',
   });
 
 app.get('/profile', ensureAuthentication ,(req,res) =>{
-    Users.findById({_id: req.user._id})
-    .then((user) =>{
-        res.render('profile', {
-            user: user});
+    Post.find({user: req.user._id})
+    .populate('user')
+    .then((posts) =>{
+      res.render('profile',{
+        posts:posts
+      });
     });
     
 });
 
 //HANDLE ROUTE FOR ALLUSERS
-app.get('/users',(req,res) =>{
+app.get('/users',ensureAuthentication,(req,res) =>{
   Users.find({}).then((users)=>{
     res.render('users',{
       users:users
+    });
+  });
+});
+
+//DISPLAY USER PROFILE AFTER ALL
+app.get('/user/:id',(req,res) =>{
+  Users.findById({_id: req.params.id})
+  .then((user)=>{
+    res.render('user',{
+      user:user
     });
   });
 });
@@ -152,6 +167,76 @@ app.post('/addLocation',(req,res) =>{
     user.save()
     .then(() =>{
       res.redirect('/profile');
+    });
+  });
+});
+
+//HANDLE  GET ROUTES FOR POST
+app.get('/addPost',(req,res) =>{
+  res.render('addPost');
+});
+
+//HANDLE POST ROUTE FOR POST
+app.post('/savePost', (req,res) =>{
+  var allowComments;
+  if(req.body.allowComments){
+    allowComments=true;
+  }else{
+    allowComments=false;
+  }
+  const newPost={
+    title:req.body.title,
+    body:req.body.body,
+    status: req.body.status,
+    allowComments:allowComments,
+    user: req.user._id
+  }
+  new Post(newPost).save()
+  .then(() =>{
+    res.redirect('/posts');
+  });
+});
+
+//HANDLE EDIT ROUTE
+app.get('/editPost/:id', (req,res)=>{
+  Post.findOne({_id: req.params.id})
+  .then((post) =>{
+    res.render('editingPost', {
+      post:post
+    });
+  });
+});
+
+//HANDLE PUT FOR EDITPOST
+app.put('/editingPost/:id', (req,res) =>{
+  Post.findOne({_id: req.params.id})
+  .then((post) =>{
+    var allowComments;
+    if(req.body.allowComments){
+      allowComments=true;
+    }else{
+      allowComments=false;
+    }
+    post.title= req.body.title;
+    post.body=req.body.body;
+    post.status= req.body.status;
+    post.allowComments= allowComments;
+    post.save()
+    .then(() =>{
+      res.redirect('/profile');
+    });
+  });
+});
+
+
+//HANDLE POSTS ROUTES
+app.get('/posts',ensureAuthentication ,(req,res)=>{
+  Post.find({status:'public'})
+  .populate('user')
+  .sort({date:'desc'})
+  .then((posts)=>{
+    res.render('publicPosts', {
+      posts:posts
     });
   });
 });
