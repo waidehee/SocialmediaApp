@@ -108,6 +108,15 @@ app.get('/profile', ensureAuthentication ,(req,res) =>{
     
 });
 
+//HANDLE ROUTE FOR ALLUSERS
+app.get('/users',(req,res) =>{
+  Users.find({}).then((users)=>{
+    res.render('users',{
+      users:users
+    });
+  });
+});
+
 //Handle Email POST route
 app.post('/addEmail',(req,res) =>{
   const email=req.body.email;
