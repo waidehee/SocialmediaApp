@@ -20,7 +20,7 @@ passport.use(new GoogleStrategy({
         proxy: true
     },
     (accessToken, refreshToken, profile, done) => {
-       console.log(profile);
+       //console.log(profile);
        User.findOne({
            google: profile.id
        }).then((user) => {

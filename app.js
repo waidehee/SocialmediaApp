@@ -264,18 +264,18 @@ app.get('/showposts/:id', (req,res) =>{
 });
 
 //HANDLE COMMENT SAVE DATABASE
-app.post('/addComment/:id', (req,res)=>{
+app.post('/addComment/:id', (req, res) => {
   Post.findOne({_id: req.params.id})
-  .then((post) =>{
-    const newComment={
-      commentBody: req.body.commentBody,
-      commentUser: req.user._id
-    }
-    post.comments.push(newComment);
-    post.save()
-    .then(()=>{
-      res.redirect('/posts');
-    });
+  .then((post) => {
+      const newComment = {
+          commentBody: req.body.commentBody,
+          commentUser: req.user._id
+      }
+      post.comments.push(newComment)
+      post.save()
+      .then(() => {
+          res.redirect('/posts');
+      });
   });
 });
 
